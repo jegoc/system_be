@@ -1,0 +1,54 @@
+
+Sub DoubleCheckFW()
+    Dim ws1 As Worksheet, ws2 As Worksheet
+    Dim lastRowSheet1 As Long, lastRowSheet2 As Long
+    Dim i As Long, j As Long
+    Dim matchFound As Boolean
+    
+    ' Set your worksheets
+    Set ws1 = ThisWorkbook.Sheets("Sheet1")
+    Set ws2 = ThisWorkbook.Sheets("Sheet1")
+
+    ' Find the last row with data in each sheet
+    lastRowSheet1 = ws1.Cells(ws1.Rows.Count, "B").End(xlUp).Row
+    lastRowSheet2 = ws2.Cells(ws2.Rows.Count, "C").End(xlUp).Row
+    
+    ' Loop through rows in Sheet1
+    For i = lastRowSheet1 + 1 To lastRowSheet2
+    ctr = 0
+    
+        ' Loop through rows in Sheet2 for each row in Sheet1
+        For j = 7 To lastRowSheet1
+            ' Assume match is found initially
+            matchFound = True
+            
+            ' Loop through cells in the row
+            For k = 1 To 5
+                ' Compare cells in Sheet1 and Sheet2
+                If ws1.Cells(j, 4).Value <> ws2.Cells(i, 4).Value Or _
+                    ws1.Cells(j, 5).Value <> ws2.Cells(i, 5).Value Or _
+                    ws1.Cells(j, 6).Value <> ws2.Cells(i, 6).Value Or _
+                    ws1.Cells(j, 7).Value <> ws2.Cells(i, 7).Value Then
+                        matchFound = False
+                        Exit For
+                End If
+            Next k
+
+            ' If all cells matched, log the result
+            If matchFound Then
+                ctr = ctr + 1
+            End If
+            
+        Next j
+            ' If no match is found, add specific cells from Sheet2 to Sheet1
+            If ctr > 0 Then
+                Dim lastRowSheet1New As Long
+                lastRowSheet1New = ws1.Cells(ws1.Rows.Count, "B").End(xlUp).Row
+                
+                ws2.Cells(i, 8).Value = "Found but not the same filename"
+                For k = 1 To 7
+                    ws1.Cells(i, k).Interior.Color = RGB(255, 255, 128)
+                Next k
+            End If
+    Next i
+End Sub
