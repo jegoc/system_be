@@ -5,6 +5,8 @@ const validator = require('validator');
 const crypto = require('crypto');
 const dns = require('dns');
 require('dotenv').config();
+const util = require('util');
+const queryAsync = util.promisify(db.query).bind(db);
 
 const IV = Buffer.alloc(16, 0);
 
@@ -29,15 +31,6 @@ function isEmailValid(email) {
     });
   });
 }
-
-// function isEmailValid(email) {
-//   const domain = email.split('@')[1];
-//   return new Promise((resolve) => {
-//     dns.resolveMx(domain, (err, addresses) => {
-//       resolve(!err && addresses && addresses.length > 0);
-//     });
-//   });
-// }
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -83,7 +76,7 @@ router.post('/', validateFormSignUp, async (req, res) => {
   try {
     const {
       fname, mi, lname, address, city, province, zip,
-      cellphone, email, password
+      cellphone, email, password, verify_code
     } = req.body;
 
     const hashedPassword = hashPassword(password);
@@ -94,7 +87,7 @@ router.post('/', validateFormSignUp, async (req, res) => {
     const accountData = [
       'Shop', 'user', fname, mi, lname, address, city,
       province, zip, encryptedCellphone, encryptedEmail,
-      '', 0, 0, '', '', 0, 0
+      '', 0, 0, '', verify_code, 0, 0
     ];
 
     const insertAccountQuery = `
@@ -135,8 +128,7 @@ router.post('/', validateFormSignUp, async (req, res) => {
 });
 
 
-// Express route (Node.js backend)
-// Express route
+// Check email validity
 router.post('/check-email', async (req, res) => {
   const { email } = req.body;
 
@@ -155,34 +147,65 @@ router.post('/check-email', async (req, res) => {
 });
 
 
-// //** For verification account */
-// // For verification account
-// // router.get('/verify', async (request, response) => {
-// //   try {
-// //     const { account, verify_code } = request.query;
 
-// //     const query = `
-// //       UPDATE user
-// //       SET verify_status = 1
-// //       WHERE account = ? AND verify_code = ? AND verify_status = 0
-// //     `;
+// Helper function to verify account
+async function verifyAccount(code) {
+  const updateAccountQuery = `
+    UPDATE account
+    SET verify_status = 1, status = 1
+    WHERE verify_code = ? AND verify_status = 0
+  `;
+  const result = await queryAsync(updateAccountQuery, [code]);
+  return result;
+}
 
-// //     const values = [account, verify_code];
+// Helper function to update user login
+async function activateUserLogin(accountId) {
+  const updateLoginQuery = `
+    UPDATE user_login
+    SET status = 1
+    WHERE account_id = ? AND status = 0
+  `;
+  const result = await queryAsync(updateLoginQuery, [accountId]);
+  return result;
+}
 
-// //     db.query(query, values, (error, results) => {
-// //       if (error) {
-// //         console.error(error);
-// //         response.status(500).json({ success: false, message: 'Internal server error' });
-// //       } else if (results.affectedRows > 0) {
-// //         response.json({ success: true, message: 'User updated successfully' });
-// //       } else {
-// //         response.status(400).json({ success: false, message: 'User not found or not updated' });
-// //       }
-// //     });
-// //   } catch (error) {
-// //     console.error(error);
-// //     response.status(500).json({ success: false, message: 'Internal server error' });
-// //   }
-// // });
+// Verification route
+router.get('/verify/:code', async (req, res) => {
+  try {
+    const verifyCode = req.params.code;
+
+    if (!verifyCode || typeof verifyCode !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid or missing verification code' });
+    }
+
+    const accountResult = await verifyAccount(verifyCode);
+
+    if (accountResult.affectedRows === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid or already verified code' });
+    }
+
+    // Retrieve the account ID for the verified account
+    const getAccountIdQuery = 'SELECT account_id FROM account WHERE verify_code = ?';
+    const [account] = await queryAsync(getAccountIdQuery, [verifyCode]);
+
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Account not found' });
+    }
+
+    const loginResult = await activateUserLogin(account.account_id);
+
+    if (loginResult.affectedRows === 0) {
+      return res.status(400).json({ success: false, message: 'User login not updated' });
+    }
+
+    res.json({ success: true, message: 'Account verified and user login activated' });
+
+  } catch (error) {
+    console.error('Verification error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
 module.exports = router;
