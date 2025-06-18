@@ -16,6 +16,7 @@ var indexRouter = require('./routes/index');
 // Users
 var usersRouter = require('./routes/user/users');
 var loginRouter = require('./routes/user/login');
+var forgotRouter = require('./routes/user/forgot');
 var logoutRouter = require('./routes/user/logout');
 var regchkemailRouter = require('./routes/user/regchkemail');
 var registerRouter = require('./routes/user/register');
@@ -31,6 +32,7 @@ var textFilesRouter = require('./routes/others/textfile');
 app.use('/express', indexRouter);
 app.use('/express/users', usersRouter);
 app.use('/express/login', loginRouter);
+app.use('/express/forgot', forgotRouter);
 app.use('/express/logout', logoutRouter);
 app.use('/express/regchkemail', regchkemailRouter);
 app.use('/express/register', registerRouter);
