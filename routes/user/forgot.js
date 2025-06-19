@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const db = require('../../../db');
+const db = require('../../db');
 const validator = require('validator');
 const crypto = require('crypto');
 const dns = require('dns');
@@ -39,34 +39,11 @@ function isEmailValid(email) {
   });
 }
 
-
-// Validation middleware
-const validateFormData = async (request, response, next) => {
-  const { email, password } = request.body;
-
-  if (!email || !password) {
-    return response.status(400).send({ error: 'Inputs are required' });
-  }
-
-  const isValid = await isEmailValid(email);
-
-  if (!isValid) {
-    console.error('Invalid or non-existent email address');
-    return response.status(400).json({ error: 'Invalid or non-existent email address' });
-  }
-
-  if (!validator.isEmail(email)) {
-    return response.status(400).send({ error: 'Invalid email format' });
-  }
-
-  next();
-};
-
 // ************* Forgot User **********************
   
   // Validation middleware
   const validateFormDataUpdate = async (request, response, next) => {
-    const { email, pin } = request.body;
+    const { email } = request.body;
   
     // Usage
     const isValid = await isEmailValid(email);
@@ -75,8 +52,8 @@ const validateFormData = async (request, response, next) => {
         console.error('Invalid or non-existent email address');
         return response.status(400).json({ error: 'Invalid or non-existent email address' });
     }
-  
-    if (!pin || !email ) {
+
+    if (!email) {
       return response.status(400).send({ error: 'Inputs are required' });
     }
   
@@ -90,7 +67,7 @@ const validateFormData = async (request, response, next) => {
     
 router.post('/', validateFormDataUpdate, async (request, response) => {
   try {
-    const { email, pin, password } = request.body;
+    const { email, password } = request.body;
 
     const encryptionKey = process.env.DE_EN; // 32-character key for AES-256
     const encryptedEmail = encrypt(email, encryptionKey);
@@ -99,12 +76,12 @@ router.post('/', validateFormDataUpdate, async (request, response) => {
     const hashedPassword = hashPasswordUpdate(password);
 
     const query = `
-      UPDATE user
+      UPDATE user_login
       SET password = ?
-      WHERE email = ? AND pin = ?
+      WHERE email = ?
     `;
 
-    const values = [hashedPassword, encryptedEmail, pin,];
+    const values = [hashedPassword, encryptedEmail];
 
     db.query(query, values, (error, results) => {
       if (error) {
