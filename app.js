@@ -25,6 +25,9 @@ var sendEmailNoTokenRouter = require('./routes/user/send_email_notoken');
 var signUpRouter = require('./routes/user/sign_up');
 var userTrackingRouter = require('./routes/user/user_tracking');
 
+// Common
+var feedbackRouter = require('./routes/common/feedback');
+
 //Others
 var fbcRouter = require('./routes/others/upload');
 var textFilesRouter = require('./routes/others/textfile');
@@ -40,6 +43,9 @@ app.use('/express/otp', otpRequestRouter);
 app.use('/express/send_email_no_token', sendEmailNoTokenRouter);
 app.use('/express/signup', signUpRouter);
 app.use('/express/user_tracking', userTrackingRouter);
+
+// Common
+app.use('/express/feedback', feedbackRouter);
 
 app.use('/express/upload', fbcRouter);
 app.use('/express/textfile', textFilesRouter);
