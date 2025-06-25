@@ -28,6 +28,9 @@ var userTrackingRouter = require('./routes/user/user_tracking');
 // Common
 var feedbackRouter = require('./routes/common/feedback');
 
+// AI
+var searchAIRouter = require('./routes/ai/search');
+
 //Others
 var fbcRouter = require('./routes/others/upload');
 var textFilesRouter = require('./routes/others/textfile');
@@ -46,6 +49,9 @@ app.use('/express/user_tracking', userTrackingRouter);
 
 // Common
 app.use('/express/feedback', feedbackRouter);
+
+// Common
+app.use('/express/searchai', searchAIRouter);
 
 app.use('/express/upload', fbcRouter);
 app.use('/express/textfile', textFilesRouter);
