@@ -12,9 +12,9 @@ const validateForm = async (req, res, next) => {
 
 
 router.post('/', function(request, response){
-    var sql = "INSERT INTO feedback (rating, comment, status ) VALUES ?";
+    var sql = "INSERT INTO feedback (rating, email, comment, status ) VALUES ?";
     var values = [
-        [request.body.rating, request.body.comment, 1]
+        [request.body.rating, request.body.email, request.body.comment, 1]
     ];
     db.query(sql, [values], function (error, results) {
         if ( error ){
@@ -24,34 +24,5 @@ router.post('/', function(request, response){
         }
     });
 });
-
-// router.post('/', validateForm, async (req, res) => {
-//   try {
-//     const {
-//       rating, comment
-//     } = req.body;
-
-//     const accountData = [
-//       rating, comment, 0
-//     ];
-
-//     const insertAccountQuery = `
-//       INSERT INTO feedback (
-//         rating, comment, status
-//       ) VALUES (?)`;
-
-//     const accountResult = await db.query(insertAccountQuery, [accountData]);
-
-//     if (accountResult.affectedRows === 0) {
-//       return res.status(400).json({ success: false, message: 'Account creation failed' });
-//     }
-
-//     return res.json({ success: true, message: 'User registered successfully' });
-
-//   } catch (error) {
-//     console.error('Signup Error:', error);
-//     return res.status(500).json({ success: false, message: 'Internal server error' });
-//   }
-// });
 
 module.exports = router;
