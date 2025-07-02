@@ -31,6 +31,9 @@ var feedbackRouter = require('./routes/common/feedback');
 // AI
 var searchAIRouter = require('./routes/ai/search');
 
+// QR Code
+var qrScannerRouter = require('./routes/qr/scanner');
+
 //Others
 var fbcRouter = require('./routes/others/upload');
 var textFilesRouter = require('./routes/others/textfile');
@@ -50,8 +53,11 @@ app.use('/express/user_tracking', userTrackingRouter);
 // Common
 app.use('/express/feedback', feedbackRouter);
 
-// Common
+// AI
 app.use('/express/searchai', searchAIRouter);
+
+// QR Code
+app.use('/express/scan', qrScannerRouter);
 
 app.use('/express/upload', fbcRouter);
 app.use('/express/textfile', textFilesRouter);
