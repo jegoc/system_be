@@ -27,6 +27,7 @@ var userTrackingRouter = require('./routes/user/user_tracking');
 
 // Common
 var feedbackRouter = require('./routes/common/feedback');
+var contactRouter = require('./routes/common/contact');
 
 // AI
 var searchAIRouter = require('./routes/ai/search');
@@ -52,6 +53,7 @@ app.use('/express/user_tracking', userTrackingRouter);
 
 // Common
 app.use('/express/feedback', feedbackRouter);
+app.use('/express/contact', contactRouter);
 
 // AI
 app.use('/express/searchai', searchAIRouter);
